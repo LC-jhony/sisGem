@@ -1,0 +1,119 @@
+     /* @page {
+            margin-top: 18mm;
+            margin-right: 15mm;
+            margin-bottom: 20mm;
+            margin-left: 15mm;
+     } */
+
+     body {
+            /* padding-top: 60px; */
+            padding-bottom: 45px;
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            font-family: Arial;
+            ;
+     }
+
+     .clearfix:after {
+            content: "";
+            display: table;
+            clear: both;
+     }
+
+     a {
+            color: #5D6975;
+            text-decoration: underline;
+     }
+
+     header {
+            padding: 10px 0;
+            margin-bottom: 30px;
+     }
+
+     /* .logo {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.logo img {
+  width: 90px;
+} */
+     h1 {
+            border-top: 1px solid #5D6975;
+            border-bottom: 1px solid #5D6975;
+            color: #5D6975;
+            font-size: 2.4em;
+            line-height: 1.4em;
+            font-weight: normal;
+            text-align: center;
+            margin: 0 0 20px 0;
+            background: url(dimension.png);
+     }
+
+     #project {
+            float: left;
+     }
+
+     #project span {
+            color: #5D6975;
+            text-align: right;
+            width: 52px;
+            margin-right: 10px;
+            display: inline-block;
+            font-size: 0.8em;
+     } 
+
+     #project div,
+     #company div {
+            white-space: nowrap;
+     }
+
+     /* head {
+            /* position: fixed; */
+     /* top: -50px;
+            left: 0px;
+            right: 0px; 
+            height: 85px;
+            overflow: hidden;
+     } */
+
+     img {
+            width: 150px;
+            height: 90px;
+     }
+
+     main {
+            margin-top: 30px;
+            font-size: 10pt;
+     }
+
+     table {
+
+            font-size: xx-small;
+            border-collapse: collapse;
+     }
+
+     table tr:nth-child(even) {
+            background-color: #f2f2f2;
+
+     }
+
+     thead tr th {
+            border: 1px solid #ddd;
+     }
+
+
+     tbody tr td {
+            font-size: x-small;
+            padding: 2px 5px;
+            border: 1px solid #ddd;
+     }
+
+     tfoot tr td {
+            font-weight: 100;
+            font-size: x-small;
+     }
+
+     .gray {
+            background-color: lightgray;
+     }
