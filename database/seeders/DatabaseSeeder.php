@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use App\Models\MaintenanceItem;
+// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use App\Models\Mantenance;
+use App\Models\User;
 use App\Models\Vehicle;
 use Illuminate\Database\Seeder;
 
@@ -45,5 +45,4 @@ class DatabaseSeeder extends Seeder
         Vehicle::factory(1000)->create();
         Mantenance::factory(100000)->create();
     }
-
 }

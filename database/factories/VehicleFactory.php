@@ -2,8 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Models\Vehicle;
-use App\Models\MaintenanceItem;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -25,7 +23,7 @@ class VehicleFactory extends Factory
             'marca' => $this->faker->randomElement(['Toyota', 'Nissan', 'Ford', 'Chevrolet', 'Hyundai', 'Kia']),
             'unidad' => $this->faker->word(),
             'property_card' => $this->faker->year(),
-            'status' => $this->faker->randomElement(['Operativo', 'Fuera de Servicio', 'En Reparación',]),
+            'status' => $this->faker->randomElement(['Operativo', 'Fuera de Servicio', 'En Reparación']),
         ];
     }
 }

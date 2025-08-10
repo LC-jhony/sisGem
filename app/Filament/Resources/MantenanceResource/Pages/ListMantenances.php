@@ -2,11 +2,10 @@
 
 namespace App\Filament\Resources\MantenanceResource\Pages;
 
+use App\Filament\Resources\MantenanceResource;
 use Filament\Actions;
-use App\Models\Mantenance;
 use Filament\Forms;
 use Filament\Resources\Pages\ListRecords;
-use App\Filament\Resources\MantenanceResource;
 
 class ListMantenances extends ListRecords
 {
@@ -48,7 +47,7 @@ class ListMantenances extends ListRecords
                             Forms\Components\DatePicker::make('end_date')
                                 ->label('Fecha final')
                                 ->required()
-                                 ->native(false),
+                                ->native(false),
                         ]),
                 ])
                 ->modalSubmitActionLabel('Generar PDF')

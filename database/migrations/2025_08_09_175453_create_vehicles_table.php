@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('property_card');
             $table->enum('status', [
                 'Operativo',
-          
+
                 'Fuera de Servicio',
                 'En Reparación',
             ]);

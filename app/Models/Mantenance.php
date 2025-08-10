@@ -2,16 +2,14 @@
 
 namespace App\Models;
 
-use App\Models\Vehicle;
-use App\Models\MaintenanceItem;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Testing\Fluent\Concerns\Has;
 
 class Mantenance extends Model
 {
     use HasFactory;
+
     protected $table = 'maintenances';
 
     protected $fillable = [
@@ -30,12 +28,14 @@ class Mantenance extends Model
         'rear_right_brake_pad',
         'brake_pads_checked_at',
     ];
+
     protected $casts = [
         'material_cost' => 'decimal:2',
         'labor_cost' => 'decimal:2',
         'total_cost' => 'decimal:2',
         'brake_pads_checked_at' => 'datetime',
     ];
+
     public function vehicle(): BelongsTo
     {
         return $this->belongsTo(
