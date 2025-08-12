@@ -2,13 +2,20 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\MantenanceResource\Pages;
-use App\Models\Mantenance;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
 use Filament\Tables;
+use App\Models\Vehicle;
+use Filament\Forms\Form;
+use App\Enum\MillageItems;
+use App\Models\Mantenance;
 use Filament\Tables\Table;
+use Filament\Support\RawJs;
+use App\Models\MaintenanceItem;
+use Filament\Resources\Resource;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
+use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Resources\MantenanceResource\Pages;
 
 class MantenanceResource extends Resource
 {
@@ -24,48 +31,124 @@ class MantenanceResource extends Resource
     {
         return $form
             ->schema([
+            Forms\Components\Section::make('Archivos')
+                ->columns(2)
+                ->schema([
+                    Forms\Components\FileUpload::make('photo_path')
+                        ->label('Foto del Mantenimiento')
+                        ->disk('public')
+                        ->directory('maintenance/photos')
+                        ->visibility('public')
+                        ->default(null)
+                        ->helperText(str('La Foto  **del Mantenimiento** debe de subirlo para el mantenimiento.')->inlineMarkdown()->toHtmlString()),
+                    Forms\Components\FileUpload::make('file_path')
+                        ->label('Archivo del Mantenimiento')
+                        ->disk('public')
+                        ->directory('maintenance/files')
+                        // ->acceptedFileTypes(['application/pdf'])
+                        ->helperText(str('El archivo  **Boleta, Factura** debe de subirlo para el mantenimiento.')->inlineMarkdown()->toHtmlString()),
+                ]),
+            Forms\Components\Grid::make()
+                ->columns(2)
+                ->schema([
                 Forms\Components\Select::make('vehicle_id')
-                    ->relationship('vehicle', 'id')
+                    ->label('Vehiculo')
+                    ->options(Vehicle::all()->pluck('placa', 'id'))
+                    ->searchable()
+                    ->preload()
+                    ->native(false)
                     ->required(),
                 Forms\Components\Select::make('maintenance_item_id')
-                    ->relationship('maintenanceItem', 'name')
+                    ->label('Mantenimiento')
+                    ->options(MaintenanceItem::all()->pluck('name', 'id'))
+                    ->label('Mantenimiento')
+                    ->searchable()
+                    ->preload()
+                    ->native(false)
                     ->required(),
-                Forms\Components\TextInput::make('mileage')
-                    ->required()
-                    ->numeric(),
-                Forms\Components\Toggle::make('is_done')
+                Forms\Components\Select::make('mileage')
+                    ->label('kilometro')
+                    ->options(MillageItems::class)
+                    ->searchable()
+                    ->preload()
+                    ->native(false)
                     ->required(),
-                Forms\Components\TextInput::make('material_cost')
-                    ->required()
-                    ->numeric()
-                    ->default(0.00),
-                Forms\Components\TextInput::make('labor_cost')
-                    ->required()
-                    ->numeric()
-                    ->default(0.00),
-                Forms\Components\TextInput::make('total_cost')
-                    ->required()
-                    ->numeric()
-                    ->default(0.00),
-                Forms\Components\TextInput::make('photo_path')
-                    ->maxLength(255)
-                    ->default(null),
-                Forms\Components\TextInput::make('file_path')
-                    ->maxLength(255)
-                    ->default(null),
-                Forms\Components\TextInput::make('front_left_brake_pad')
-                    ->numeric()
-                    ->default(null),
-                Forms\Components\TextInput::make('front_right_brake_pad')
-                    ->numeric()
-                    ->default(null),
-                Forms\Components\TextInput::make('rear_left_brake_pad')
-                    ->numeric()
-                    ->default(null),
-                Forms\Components\TextInput::make('rear_right_brake_pad')
-                    ->numeric()
-                    ->default(null),
-                Forms\Components\DateTimePicker::make('brake_pads_checked_at'),
+                // Forms\Components\Toggle::make('status')
+                //     ->required()
+                //     ->default(true),
+                Forms\Components\Select::make('status')
+                    ->label('Estado')
+                    ->options([
+                        '1' => 'Si',
+                        '0' => 'No',
+                    ])
+                    ->disabled()
+                    ->dehydrated()
+                    ->default('1'),
+                Forms\Components\Section::make('Pastilla de Freno')
+                    //->icon('iconpark-brakepads-o')
+                    ->columns(2)
+                    ->schema([
+                        Forms\Components\TextInput::make('front_left_brake_pad')
+                        ->label('Pastilla delantera izquierda')
+                        ->prefix('%')
+                        ->numeric(),
+                    Forms\Components\TextInput::make('front_right_brake_pad')
+                        ->label('Pastilla delantera derecha')
+                        ->prefix('%')
+                        ->numeric(),
+                    Forms\Components\TextInput::make('rear_left_brake_pad')
+                            ->label('Pastilla trasera izquierda')
+                            ->prefix('%')
+                            ->numeric(),
+                        Forms\Components\TextInput::make('rear_right_brake_pad')
+                            ->label('Pastilla trasera derecha')
+                            ->prefix('%')
+                            ->numeric(),
+                        Forms\Components\DatePicker::make('brake_pads_checked_at')
+                            ->label('Fecha de Verificación')
+                            ->default(now())
+                            ->disabled()
+                            ->dehydrated()
+                            ->required()
+                            ->native(false),
+                    ]),
+                Forms\Components\Section::make('Costos')
+                    ->description('Valorizado del Mantenimiento Vehicular')
+                    ->icon('heroicon-o-currency-dollar')
+                    ->columns(3)
+                    ->schema([
+                        Forms\Components\TextInput::make('Price_material')
+                            ->label('Precio Material')
+                            ->prefix('S/.')
+                            // ->inputMode('decimal')
+                            // ->mask(RawJs::make('$money($input, \',\')'))
+                            ->numeric()
+                        ->reactive()
+                        ->afterStateUpdated(function ($state, callable $set, $get) {
+                            $workforce = floatval($get('workforce') ?? 0);
+                            $set('maintenance_cost', floatval($state) + $workforce);
+                        }),
+                    Forms\Components\TextInput::make('workforce')
+                        ->label('Mano de Obra')
+                        ->prefix('S/.')
+                        // ->inputMode('decimal')
+                        // ->mask(RawJs::make('$money($input, ",")'))
+                        ->numeric()
+                                ->reactive()
+                                ->afterStateUpdated(function ($state, callable $set, $get) {
+                                    $workforce = floatval($get('Price_material') ?? 0);
+                                    $set('maintenance_cost', floatval($state) + $workforce);
+                                }),
+                            Forms\Components\TextInput::make('maintenance_cost')
+                                ->label('Costo Total')
+                                ->prefix('S/.')
+                                ->inputMode('decimal')
+                                ->mask(RawJs::make('$money($input, ",")'))
+                                ->numeric(),
+                        ]),
+
+                ]),
             ]);
     }
 
@@ -126,8 +209,54 @@ class MantenanceResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
-            ])
+            SelectFilter::make('is_done')
+                ->options([
+                    '1' => '✅ Completado',
+                    '0' => '⏳ Pendiente',
+                ])
+                ->native(false),
+            Filter::make('Rango de Fechas')
+                ->form([
+                    Forms\Components\DatePicker::make('start_date')
+                        ->label('Fecha de inicio')
+                        ->native(false)
+                        ->placeholder('Selecciona fecha de inicio')
+                        ->displayFormat('d/m/Y')
+                        ->format('Y-m-d'),
+                    Forms\Components\DatePicker::make('end_date')
+                        ->label('Fecha de fin')
+                        ->native(false)
+                        ->placeholder('Selecciona fecha de fin')
+                        ->displayFormat('d/m/Y')
+                        ->format('Y-m-d')
+                        ->after('start_date'),
+                ])
+                ->query(function (Builder $query, array $data): Builder {
+                    return $query
+                        ->when(
+                            $data['start_date'],
+                            fn(Builder $query, $date): Builder => $query->whereDate('brake_pads_checked_at', '>=', $date),
+                        )
+                        ->when(
+                            $data['end_date'],
+                            fn(Builder $query, $date): Builder => $query->whereDate('brake_pads_checked_at', '<=', $date),
+                        );
+                })
+                ->indicateUsing(function (array $data): array {
+                    $indicators = [];
+
+                    if ($data['start_date'] ?? null) {
+                        $indicators['start_date'] = 'Desde: ' . \Carbon\Carbon::parse($data['start_date'])->format('d/m/Y');
+                    }
+
+                    if ($data['end_date'] ?? null) {
+                        $indicators['end_date'] = 'Hasta: ' . \Carbon\Carbon::parse($data['end_date'])->format('d/m/Y');
+                    }
+
+                    return $indicators;
+                })
+
+        ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),

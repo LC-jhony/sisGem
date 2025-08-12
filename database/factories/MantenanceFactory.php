@@ -26,7 +26,7 @@ class MantenanceFactory extends Factory
             'vehicle_id' => Vehicle::inRandomOrder()->first()->id,
             'maintenance_item_id' => MaintenanceItem::inRandomOrder()->first()->id,
             'mileage' => $this->faker->numberBetween(0, 300000),
-            'is_done' => $this->faker->boolean(),
+            'is_done' => $this->faker->boolean(true),
             'material_cost' => $materialCost,
             'labor_cost' => $laborCost,
             'total_cost' => $totalCost,

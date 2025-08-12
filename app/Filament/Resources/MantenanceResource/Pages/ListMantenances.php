@@ -17,7 +17,7 @@ class ListMantenances extends ListRecords
             Actions\Action::make('Reporte')
                 ->label('Reporte')
                 ->modalHeading('Generar reporte de Mantenimiento Vehicular')
-                ->color('primary')
+                ->color('success')
                 ->icon('heroicon-o-printer')
                 ->form([
                     Forms\Components\Grid::make(3)
@@ -57,7 +57,8 @@ class ListMantenances extends ListRecords
                         'start_date' => $data['start_date'] ?? null,
                         'end_date' => $data['end_date'] ?? null,
                     ]);
-                }),
+                })
+                ->openUrlInNewTab(),
             Actions\CreateAction::make(),
         ];
     }

@@ -1,247 +1,264 @@
 <x-print>
-    <!-- Header -->
-    <div class="header">
-        <h1>🚗 Reporte Detallado de Mantenimiento Vehicular</h1>
-        <p class="subtitle">Sistema de Gestión de Mantenimiento - Análisis Completo de Pastillas de Freno</p>
-        <p class="date">Generado el {{ now()->format('d/m/Y H:i:s') }}</p>
-    </div>
+    @foreach ($vehicles as $vehicleId => $maintenances)
+        @php
+            $vehicle = $maintenances->first()->vehicle;
 
-    <!-- Vehicle Information -->
-    <div class="vehicle-info">
-        <h2>📋 Información del Vehículo</h2>
-        <div class="info-grid">
-            <div class="info-item">
-                <div class="info-label">Placa</div>
-                <div class="info-value">{{ $vehicle->placa }}</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Marca</div>
-                <div class="info-value">{{ $vehicle->marca }}</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Modelo</div>
-                <div class="info-value">{{ $vehicle->modelo ?? 'N/A' }}</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Año</div>
-                <div class="info-value">{{ $vehicle->year ?? 'N/A' }}</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Color</div>
-                <div class="info-value">{{ $vehicle->color ?? 'N/A' }}</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Unidad</div>
-                <div class="info-value">{{ $vehicle->unidad ?? 'N/A' }}</div>
-            </div>
-        </div>
-    </div>
+            // Agrupar mantenimientos por categoría
+            $grouped = $maintenances->groupBy(function ($item) {
+                return optional($item->maintenanceItem)->category ?? 'General';
+            });
 
-    <!-- Filters Applied -->
-    <div class="filters-section">
-        <h3>🔍 Filtros Aplicados</h3>
-        <div class="filters-grid">
-            <div>
-                <strong>Mes:</strong> 
-                @if($filters['month'])
-                    {{ $meses[$filters['month']] ?? $filters['month'] }}
-                @else
-                    Todos los meses
-                @endif
-            </div>
-            <div>
-                <strong>Desde:</strong> 
-                {{ $filters['start_date'] ? \Carbon\Carbon::parse($filters['start_date'])->format('d/m/Y') : 'Sin límite' }}
-            </div>
-            <div>
-                <strong>Hasta:</strong> 
-                {{ $filters['end_date'] ? \Carbon\Carbon::parse($filters['end_date'])->format('d/m/Y') : 'Sin límite' }}
-            </div>
-        </div>
-    </div>
+            // Agrupar mantenimientos por fecha para pastillas
+            $brakeGroups = $maintenances->groupBy(function ($item) {
+                return $item->brake_pads_checked_at ? $item->brake_pads_checked_at->format('Y-m-d') : '0000-00-00';
+            });
+        @endphp
+        <div class="page">
+            <!-- Encabezado personalizado -->
+            <div class="header">
+                <div class="header-top">
+                    <div class="logo">
+                        <div class="logo-icon">
+                            <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('img/logo.png'))) }}"
+                                alt="Logo" style="width: 140px;">
+                        </div>
+                        {{-- <div class="logo-text">AUTO CARE PRO</div> --}}
+                    </div>
+                    <div class="report-title">
+                        <h1>REPORTE DE MANTENIMIENTO</h1>
+                        <div class="report-number">
+                            <strong style="font-widget: bold;"> Placa: </strong>
+                            {{ $vehicle->placa }} <br>
+                            <strong style="font-widget: bold;"> Mes: </strong>
+                            {{ $maintenances->first()->brake_pads_checked_at?->translatedFormat('F') ?? 'N/A' }}
+                        </div>
 
-    <!-- Maintenance Records -->
-    <div class="maintenance-section">
-        <h3>🔧 Registros de Mantenimiento y Estado de Pastillas de Freno</h3>
-        
-        @if($maintenances->isEmpty())
-            <div style="text-align: center; padding: 30px; color: #7f8c8d; font-style: italic;">
-                <p>No se encontraron registros de mantenimiento para este vehículo en el período especificado.</p>
+                    </div>
+                </div>
+                <div class="vehicle-info">
+                    {{-- <h1 style="text-align: center; font-widget: bold; color: black; margin-bottom: 6px;">Datos del
+                    Vehiculo</h1> --}}
+                    <div class="info-item">
+                        <div class="info-label">Vehículo</div>
+                        <div class="highlight">{{ $vehicle->marca }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Unidad</div>
+                        <div class="highlight">{{ $vehicle->unidad }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Tarjeta Propiedad</div>
+                        <div class="highlight">{{ $vehicle->property_card }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Kilometraje</div>
+                        <div class="highlight">{{ number_format(optional($maintenances->first())->mileage ?? 0) }} km
+                        </div>
+                    </div>s
+                </div>
             </div>
-        @else
-            <table class="maintenance-table">
-                <thead>
-                    <tr>
-                        <th width="12%">Fecha de Revisión</th>
-                        <th width="18%">Tipo de Mantenimiento</th>
-                        <th width="10%">Costo (S/)</th>
-                        <th width="8%">Estado</th>
-                        <th width="52%">Estado Detallado de Pastillas de Freno</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($maintenances as $maintenance)
-                    <tr>
-                        <td style="text-align: center;">
-                            @if($maintenance->brake_pads_checked_at)
-                                <strong>{{ \Carbon\Carbon::parse($maintenance->brake_pads_checked_at)->format('d/m/Y') }}</strong><br>
-                                <small style="color: #7f8c8d;">{{ \Carbon\Carbon::parse($maintenance->brake_pads_checked_at)->format('H:i') }}</small>
-                            @else
-                                <span style="color: #95a5a6; font-style: italic;">No registrada</span>
-                            @endif
-                        </td>
-                        <td>
-                            <strong>{{ $maintenance->maintenanceItem->name ?? 'Mantenimiento General' }}</strong>
-                        </td>
-                        <td style="text-align: right; font-weight: bold;">
-                            S/ {{ number_format($maintenance->total_cost, 2) }}
-                        </td>
-                        <td style="text-align: center;">
-                            @if($maintenance->is_done)
-                                <span class="status-completed">✓ Completado</span>
-                            @else
-                                <span class="status-pending">! Pendiente</span>
-                            @endif
-                        </td>
-                        <td>
-                            <div class="brake-pads-container">
-                                @php
-                                    $brakePads = [
-                                        'FL' => [
-                                            'value' => $maintenance->front_left_brake_pad ?? 0,
-                                            'name' => 'Front Left'
-                                        ],
-                                        'FR' => [
-                                            'value' => $maintenance->front_right_brake_pad ?? 0,
-                                            'name' => 'Front Right'
-                                        ],
-                                        'RL' => [
-                                            'value' => $maintenance->rear_left_brake_pad ?? 0,
-                                            'name' => 'Rear Left'
-                                        ],
-                                        'RR' => [
-                                            'value' => $maintenance->rear_right_brake_pad ?? 0,
-                                            'name' => 'Rear Right'
-                                        ]
-                                    ];
-                                @endphp
-                                
-                                @foreach($brakePads as $position => $data)
-                                    @php
-                                        $value = $data['value'];
-                                        $class = match(true) {
-                                            $value >= 80 => 'progress-excellent',
-                                            $value >= 60 => 'progress-good',
-                                            $value >= 40 => 'progress-warning',
-                                            $value >= 20 => 'progress-danger',
-                                            default => 'progress-critical'
-                                        };
-                                        
-                                        $statusClass = match(true) {
-                                            $value >= 80 => 'status-excellent',
-                                            $value >= 60 => 'status-good',
-                                            $value >= 40 => 'status-warning',
-                                            $value >= 20 => 'status-danger',
-                                            default => 'status-critical'
-                                        };
-                                        
-                                        $status = match(true) {
-                                            $value >= 80 => 'Excelente',
-                                            $value >= 60 => 'Bueno',
-                                            $value >= 40 => 'Atención',
-                                            $value >= 20 => 'Crítico',
-                                            default => 'Reemplazar'
-                                        };
-                                    @endphp
-                                    
-                                    <div class="brake-pad-row">
-                                        <div class="brake-pad-label">{{ $position }}</div>
-                                        <div class="progress-container">
-                                            <div class="progress-bar {{ $class }}" style="width: {{ $value }}%">
-                                                {{ $value }}%
+            <!-- Fin Encabezado personalizado -->
+            <main>
+                <div class="section">
+                    <div class="section-title">
+                        MANTENIMIENTOS REALIZADOS
+                    </div>
+                </div>
+                <!-- Mantenimientos realizados -->
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Descripción</th>
+                            <th>Estado</th>
+                            <th>KM</th>
+                            <th>Fecha</th>
+                        </tr>
+                    </thead>
+
+                    <body>
+                        @foreach ($maintenances as $item)
+                            <tr>
+                                <td>{{ $loop->iteration }}</td>
+                                <td>{{ $item->maintenanceItem->name ?? 'General' }}</td>
+                                <td>{{ $item->is_done ? 'Realizado' : 'Pendiente' }}</td>
+                                <td>{{ $item->mileage }}</td>
+                                <td>{{ $item->brake_pads_checked_at?->format('d/m/Y') ?? 'N/A' }}</td>
+                            </tr>
+                        @endforeach
+                    </body>
+                </table>
+                <!-- Fin Mantenimientos realizados -->
+                <!-- Layout compacto para pastillas y costos -->
+                <!-- Estado de Pastillas -->
+                <div class="section">
+                    <div class="section-title">
+                        ESTADO DE PASTILLAS
+                    </div>
+                </div>
+                @foreach ($brakeGroups as $date => $items)
+                    <div class="date-group">
+                        <div class="date-header">
+                            📅
+                            {{ $date === '0000-00-00' ? 'SIN FECHA' : \Carbon\Carbon::parse($date)->format('d/m/Y') }}
+                        </div>
+
+                        @foreach ($items as $item)
+                            <table class="table" style="margin-bottom: 8px;">
+                                <tbody>
+                                    <tr>
+                                        <td width="40%">Del. Izq.</td>
+                                        <td width="60%">
+                                            @php
+                                                $value = $item->front_left_brake_pad;
+                                                $colorClass =
+                                                    $value >= 70
+                                                        ? 'progress-success'
+                                                        : ($value >= 30
+                                                            ? 'progress-warning'
+                                                            : 'progress-danger');
+                                            @endphp
+                                            <div class="progress-container">
+                                                <div class="progress-fill {{ $colorClass }}"
+                                                    style="width: {{ $value }}%">
+                                                    <div class="progress-value">{{ $value }}%</div>
+                                                </div>
                                             </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Del. Der.</td>
+                                        <td>
+                                            @php
+                                                $value = $item->front_right_brake_pad;
+                                                $colorClass =
+                                                    $value >= 70
+                                                        ? 'progress-success'
+                                                        : ($value >= 30
+                                                            ? 'progress-warning'
+                                                            : 'progress-danger');
+                                            @endphp
+                                            <div class="progress-container">
+                                                <div class="progress-fill {{ $colorClass }}"
+                                                    style="width: {{ $value }}%">
+                                                    <div class="progress-value">{{ $value }}%</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Tras. Izq.</td>
+                                        <td>
+                                            @php
+                                                $value = $item->rear_left_brake_pad;
+                                                $colorClass =
+                                                    $value >= 70
+                                                        ? 'progress-success'
+                                                        : ($value >= 30
+                                                            ? 'progress-warning'
+                                                            : 'progress-danger');
+                                            @endphp
+                                            <div class="progress-container">
+                                                <div class="progress-fill {{ $colorClass }}"
+                                                    style="width: {{ $value }}%">
+                                                    <div class="progress-value">{{ $value }}%</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Tras. Der.</td>
+                                        <td>
+                                            @php
+                                                $value = $item->rear_right_brake_pad;
+                                                $colorClass =
+                                                    $value >= 70
+                                                        ? 'progress-success'
+                                                        : ($value >= 30
+                                                            ? 'progress-warning'
+                                                            : 'progress-danger');
+                                            @endphp
+                                            <div class="progress-container">
+                                                <div class="progress-fill {{ $colorClass }}"
+                                                    style="width: {{ $value }}%">
+                                                    <div class="progress-value">{{ $value }}%</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        @endforeach
+                    </div>
+                @endforeach
+                <!-- Fin Estado de Pastillas -->
+                <div class="section">
+                    <div class="section-title">
+                        COSTOS (s/.)
+                    </div>
+                </div>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Descripcion</th>
+                            <th>Fecha</th>
+                            <th>Material</th>
+                            <th>Mano de obra</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+
+                    <body>
+                        @foreach ($maintenances as $item)
+                            <tr>
+                                <td>{{ $loop->iteration }}</td>
+                                <td>{{ $item->maintenanceItem->name ?? 'General' }}</td>
+                                <td>{{ $item->brake_pads_checked_at?->format('d/m/Y') ?? 'N/A' }}</td>
+                                <td>{{ number_format($item->material_cost, 2) }}</td>
+                                <td>{{ number_format($item->labor_cost, 2) }}</td>
+                                <td>{{ number_format($item->total_cost, 2) }}</td>
+                            </tr>
+                        @endforeach
+                    </body>
+                </table>
+
+        <!-- Fotos -->
+                <div class="images-section">
+                    <h4 style="text-align: center; margin-bottom: 15px; color: #495057;">Imágenes de Mantenimiento</h4>
+
+                      @if ($maintenances->contains('photo_path') || $maintenances->contains('file_path'))
+                        <div class="section">
+                            <div class="section-title">
+                                📎 ARCHIVOS ADJUNTOS
+                            </div>
+
+                            <div class="attachments">
+                                @foreach ($maintenances as $item)
+                                    @if ($item->photo_path)
+                                        <div class="attachment">
+                                            <div class="attachment-icon">
+                                            </div>
+                                            <div class="attachment-name">FOTO</div>
+                                            <div style="font-size: 7px; color: var(--secondary);">Ver/Descargar</div>
                                         </div>
-                                        <div class="brake-pad-status {{ $statusClass }}">
-                                            {{ $status }}
+                                    @endif
+
+                                    @if ($item->file_path)
+                                        <div class="attachment">
+                                            <div class="attachment-icon">📄</div>
+                                            <div class="attachment-name">DOCUMENTO</div>
+                                            <div style="font-size: 7px; color: var(--secondary);">Ver/Descargar</div>
                                         </div>
-                                    </div>
+                                    @endif
                                 @endforeach
                             </div>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        @endif
-    </div>
+                        </div>
+                    @endif
+                </div>
+                <!-- Fin Fotos -->
+            </main>
 
-    <!-- Summary Statistics -->
-    @if($maintenances->isNotEmpty())
-    <div class="summary-section">
-        <h3>📊 Resumen Estadístico del Vehículo</h3>
-        <div class="summary-grid">
-            @php
-                $totalMaintenances = $maintenances->count();
-                $completedMaintenances = $maintenances->where('is_done', true)->count();
-                $totalCost = $maintenances->sum('total_cost');
-                
-                // Calculate average brake pad life
-                $brakePadValues = [];
-                foreach($maintenances as $m) {
-                    $brakePadValues[] = $m->front_left_brake_pad ?? 0;
-                    $brakePadValues[] = $m->front_right_brake_pad ?? 0;
-                    $brakePadValues[] = $m->rear_left_brake_pad ?? 0;
-                    $brakePadValues[] = $m->rear_right_brake_pad ?? 0;
-                }
-                $avgBrakePadLife = count($brakePadValues) > 0 ? round(array_sum($brakePadValues) / count($brakePadValues), 1) : 0;
-                
-                // Calculate critical brake pads (below 20%)
-                $criticalBrakePads = 0;
-                foreach($brakePadValues as $value) {
-                    if($value < 20) $criticalBrakePads++;
-                }
-            @endphp
-            
-            <div class="summary-item">
-                <div class="summary-value">{{ $totalMaintenances }}</div>
-                <div class="summary-label">Total Mantenimientos</div>
-            </div>
-            <div class="summary-item">
-                <div class="summary-value">{{ $completedMaintenances }}</div>
-                <div class="summary-label">Completados</div>
-            </div>
-            <div class="summary-item">
-                <div class="summary-value">S/ {{ number_format($totalCost, 2) }}</div>
-                <div class="summary-label">Costo Total</div>
-            </div>
-            <div class="summary-item">
-                <div class="summary-value">{{ $avgBrakePadLife }}%</div>
-                <div class="summary-label">Promedio Pastillas</div>
-            </div>
         </div>
-        
-        @if($criticalBrakePads > 0)
-        <div style="margin-top: 10px; padding: 8px; background-color: #fadbd8; border-radius: 4px; border-left: 4px solid #e74c3c;">
-            <strong style="color: #e74c3c;">⚠️ Atención:</strong> 
-            <span style="font-size: 9px; color: #c0392b;">
-                Se detectaron {{ $criticalBrakePads }} pastillas de freno que requieren reemplazo inmediato (menos del 20% de vida útil).
-            </span>
-        </div>
-        @endif
-    </div>
-    @endif
-
-    <!-- Footer -->
-    <div class="footer">
-        <p><strong>Sistema de Gestión de Mantenimiento Vehicular</strong></p>
-        <p>Reporte generado automáticamente | Página generada el {{ now()->format('d/m/Y H:i:s') }}</p>
-        <p style="font-size: 8px; margin-top: 5px;">
-            <strong>Leyenda de Barras de Progreso:</strong> 
-            <span style="color: #27ae60;">Excelente (80%+)</span> | 
-            <span style="color: #f39c12;">Bueno (60-79%)</span> | 
-            <span style="color: #e67e22;">Atención (40-59%)</span> | 
-            <span style="color: #e74c3c;">Crítico (20-39%)</span> | 
-            <span style="color: #8e44ad;">Reemplazar (<20%)</span>
-        </p>
-    </div>
+    @endforeach
 </x-print>

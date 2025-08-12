@@ -6,17 +6,11 @@
 </head>
 
 <body>
+    {{ $slot }}
 
-    <head>
-        <div class="logo">
-            <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('img/logo.jpeg'))) }}"
-                alt="Logo">
-        </div>
-    </head>
-    <main>
-        {{ $slot }}
-    </main>
 
+
+</div>
 </body>
 
 </html>
