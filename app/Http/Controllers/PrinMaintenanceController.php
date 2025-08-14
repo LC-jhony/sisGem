@@ -13,8 +13,6 @@ use ZipArchive;
 
 class PrinMaintenanceController extends Controller
 {
-
-
     public function __invoke(Request $request)
     {
         $month = $request->integer('month');
