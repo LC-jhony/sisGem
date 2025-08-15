@@ -18,7 +18,11 @@ class VehicleResource extends Resource
 {
     protected static ?string $model = Vehicle::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'mdi-excavator';
+
+    protected static ?string $navigationGroup = 'Gestión de Personal';
+
+    protected static ?string $modelLabel = 'Vehículos';
 
     public static function form(Form $form): Form
     {
@@ -47,6 +51,10 @@ class VehicleResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->striped()
+            ->paginated([5, 10, 25, 50, 100, 'all'])
+            ->defaultPaginationPageOption(5)
+            ->searchable()
             ->columns([
                 Tables\Columns\TextColumn::make('code')
                     ->label('PROG.')
@@ -74,12 +82,12 @@ class VehicleResource extends Resource
 
                             return $documentSoat->date ? Carbon::parse($documentSoat->date) : null;
                         } catch (\Exception $e) {
-                            Log::error("Error en SOAT [Vehículo {$record->id}]: ".$e->getMessage());
+                            Log::error("Error en SOAT [Vehículo {$record->id}]: " . $e->getMessage());
 
                             return 'invalid-date';
                         }
                     })
-                    ->formatStateUsing(fn ($state) => match (true) {
+                    ->formatStateUsing(fn($state) => match (true) {
                         $state === 'no-document' => 'Sin SOAT',
                         $state === 'invalid-date' => 'Fecha inválida',
                         default => $state?->format('d/m/Y') ?? 'Sin fecha'
@@ -108,12 +116,12 @@ class VehicleResource extends Resource
 
                             return $documentSoat->date ? Carbon::parse($documentSoat->date) : null;
                         } catch (\Exception $e) {
-                            Log::error("Error en Tarjeta [Vehículo {$record->id}]: ".$e->getMessage());
+                            Log::error("Error en Tarjeta [Vehículo {$record->id}]: " . $e->getMessage());
 
                             return 'invalid-date';
                         }
                     })
-                    ->formatStateUsing(fn ($state) => match (true) {
+                    ->formatStateUsing(fn($state) => match (true) {
                         $state === 'no-document' => 'Sin TARJETA',
                         $state === 'invalid-date' => 'Fecha inválida',
                         default => $state?->format('d/m/Y') ?? 'Sin fecha'
@@ -140,12 +148,12 @@ class VehicleResource extends Resource
 
                             return $documentSoat->date ? Carbon::parse($documentSoat->date) : null;
                         } catch (\Exception $e) {
-                            Log::error("Error en Revision [Vehículo {$record->id}]: ".$e->getMessage());
+                            Log::error("Error en Revision [Vehículo {$record->id}]: " . $e->getMessage());
 
                             return 'invalid-date';
                         }
                     })
-                    ->formatStateUsing(fn ($state) => match (true) {
+                    ->formatStateUsing(fn($state) => match (true) {
                         $state === 'no-document' => 'Sin REVISIÓN',
                         $state === 'invalid-date' => 'Fecha inválida',
                         default => $state?->format('d/m/Y') ?? 'Sin fecha'
@@ -174,12 +182,12 @@ class VehicleResource extends Resource
 
                             return $documentSoat->date ? Carbon::parse($documentSoat->date) : null;
                         } catch (\Exception $e) {
-                            Log::error("Error en POLIZA [Vehículo {$record->id}]: ".$e->getMessage());
+                            Log::error("Error en POLIZA [Vehículo {$record->id}]: " . $e->getMessage());
 
                             return 'invalid-date';
                         }
                     })
-                    ->formatStateUsing(fn ($state) => match (true) {
+                    ->formatStateUsing(fn($state) => match (true) {
                         $state === 'no-document' => 'Sin POLIZA',
                         $state === 'invalid-date' => 'Fecha inválida',
                         default => $state?->format('d/m/Y') ?? 'Sin fecha'
@@ -200,7 +208,7 @@ class VehicleResource extends Resource
                     ->label('Estado')
                     ->searchable()
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'Operativo' => 'success',
                         'En Mantenimiento' => 'warning',
                         'Fuera de Servicio' => 'danger',
@@ -230,20 +238,20 @@ class VehicleResource extends Resource
                 //
             ])
             ->actions([
-                     Tables\Actions\Action::make('view_maintenances')
+                Tables\Actions\Action::make('view_maintenances')
                     ->label('Mantenimientos')
                     ->icon('heroicon-o-wrench-screwdriver')
                     ->color('warning')
                     ->modalContent(function ($record) {
                         return view('livewire.mantenance_modal', ['record' => $record]);
                     })
-                    ->modalHeading(fn ($record) => 'Mantenimientos - Vehículo: '.$record->placa)
+                    ->modalHeading(fn($record) => 'Mantenimientos - Vehículo: ' . $record->placa)
                     ->slideOver(true)
                     ->modalSubmitAction(false)
                     ->modalCancelAction(false)
                     ->modalWidth(MaxWidth::SevenExtraLarge),
-                  //  ->visible(fn ($record) => ! empty($record) && auth()->user()->hasAnyRole(['super_admin', 'Super Admin', 'Usuario'])),
-             ActionGroup::make([
+                //  ->visible(fn ($record) => ! empty($record) && auth()->user()->hasAnyRole(['super_admin', 'Super Admin', 'Usuario'])),
+                ActionGroup::make([
                     Tables\Actions\ViewAction::make(),
                     Tables\Actions\EditAction::make()
                         ->color('primary'),

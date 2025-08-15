@@ -19,9 +19,10 @@ use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Blade;
+
 class MaintenanceVehicle extends Component implements HasForms, HasTable
 {
-     use InteractsWithForms;
+    use InteractsWithForms;
     use InteractsWithTable;
 
     public $record;
@@ -75,13 +76,13 @@ class MaintenanceVehicle extends Component implements HasForms, HasTable
                 Tables\Actions\Action::make('valued_pdf')
                     ->label('Valorizado')
                     ->icon('bi-file-pdf-fill')
-                  //  ->url(route('valuemantenacevehicle', $this->record->id))
+                    ->url(route('valuemantenacevehicle', $this->record->id))
                     ->openUrlInNewTab(),
                 Tables\Actions\Action::make('maintenance_report')
                     ->label('Historial')
                     ->icon('heroicon-o-table-cells')
                     ->color('danger')
-                //    ->url(route('maintenacehistory', $this->record->id))
+                    //    ->url(route('maintenacehistory', $this->record->id))
                     ->openUrlInNewTab(),
                 CreateAction::make()
                     ->label('Nuevo Mantenimiento')
@@ -112,7 +113,7 @@ class MaintenanceVehicle extends Component implements HasForms, HasTable
                                 Forms\Components\Select::make('vehicle_id')
                                     ->label('Vehiculo')
                                     ->options(Vehicle::all()->pluck('placa', 'id'))
-                                    ->default(fn () => $this->record->id)
+                                    ->default(fn() => $this->record->id)
                                     ->disabled()
                                     ->dehydrated()
                                     ->required(),
@@ -217,7 +218,7 @@ class MaintenanceVehicle extends Component implements HasForms, HasTable
                                 Forms\Components\Select::make('vehicle_id')
                                     ->label('Vehiculo')
                                     ->options(Vehicle::all()->pluck('placa', 'id'))
-                                    ->default(fn () => $this->record->id)
+                                    ->default(fn() => $this->record->id)
                                     ->disabled()
                                     ->dehydrated()
                                     ->required(),
@@ -312,7 +313,7 @@ class MaintenanceVehicle extends Component implements HasForms, HasTable
                                         'vehicle' => $this->record,
                                     ])
                                 )->stream();
-                            }, $vehicle->placa.'-'.now()->format('Y-m-d').'.pdf');
+                            }, $vehicle->placa . '-' . now()->format('Y-m-d') . '.pdf');
                         }),
                 ]),
             ]);

@@ -2,21 +2,280 @@
 
 <head>
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
-    <link rel="stylesheet" href="{{ public_path('pdf-styls.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ public_path('print_pdf.css') }}" type="text/css">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --light: #f8f9fa;
+            --gray: #95a5a6;
+            --border: #e0e6ed;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'DejaVu Sans', sans-serif;
+            /* color           : #333;
+            line-height   : 1.35; */
+            font-size: 10px;
+            /* background-color: white; */
+            /* padding         : 15px;
+            margin        : 0; */
+        }
+
+        main {
+            margin-top: 30px;
+            font-size: 10pt;
+        }
+
+        .page {
+            page-break-after: always;
+            max-width: 1000px;
+            margin: 0 auto;
+            position: relative;
+            padding-top: 10px;
+        }
+
+        .header {
+            background: #f9f9f9;
+            color: white;
+            padding: 20px;
+        }
+
+        .header-top {
+            display: table;
+            width: 100%;
+        }
+
+        .logo {
+            display: table-cell;
+            vertical-align: middle;
+        }
+
+        /* .logo-icon {
+        display: inline-block;
+        width: 50px;
+        height: 50px;
+        background: white;
+        color: #1e40af;
+        text-align: center;
+        line-height: 50px;
+        font-size: 20px;
+        font-weight: bold;
+
+    } */
+        .logo-text {
+            font-size: 20px;
+            font-weight: bold;
+            margin-left: 10px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .report-title {
+            display: table-cell;
+            text-align: right;
+            vertical-align: middle;
+        }
+
+        .report-title h1 {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #0f172a;
+        }
+
+        .report-number {
+            background: #243c94;
+            color: #fff;
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            display: inline-block;
+        }
+
+        .vehicle-info {
+
+            /* margin-top   : 10px; */
+            /* border       : 1px solid #ccc;
+      border-radius: 8px; */
+            padding: 10px;
+            font-size: 12px;
+        }
+
+        .info-item {
+            text-align: center;
+            padding: 6px;
+            color: #666;
+            width: 22%;
+            display: inline-block;
+            vertical-align: top;
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+
+        .info-label {
+            font-weight: bold;
+            color: #666;
+            font-size: 11px;
+        }
+
+        .highlight {
+            color: #1e40af;
+            font-weight: bold;
+        }
+
+        .section {
+            margin-bottom: 15px;
+        }
+
+        .section-title {
+            font-size: 12px;
+            font-weight: 700;
+            padding: 6px 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--primary);
+            border-left: 3px solid var(--secondary);
+        }
+
+        /* Tablas compactas */
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 12px;
+        }
+
+        .table th {
+            background-color: var(--primary);
+            color: white;
+            text-align: left;
+            padding: 6px 8px;
+            font-weight: 600;
+
+        }
+
+        .table td {
+            padding: 6px 8px;
+            border-bottom: 1px solid var(--border);
+            font-size: 9px;
+        }
+
+        .table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        /* Layout compacto */
+        .compact-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .compact-section {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            padding: 10px;
+            border: 1px solid var(--border);
+        }
+
+        .compact-title {
+            flex: auto;
+
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Agrupación por fecha */
+        .date-group {
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px dashed var(--border);
+        }
+
+        .date-header {
+            font-weight: 700;
+
+            color: var(--primary);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Barras de progreso mejoradas */
+        .progress-container {
+            position: relative;
+            height: 14px;
+            background-color: #edf2f7;
+            border-radius: 7px;
+            overflow: hidden;
+            margin: 3px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            min-width: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 4px;
+            box-sizing: border-box;
+        }
+
+        .progress-success {
+            background-color: var(--success);
+        }
+
+        .progress-warning {
+            background-color: var(--warning);
+        }
+
+        .progress-danger {
+            background-color: var(--danger);
+        }
+
+        .progress-value {
+            text-align: center;
+            font-size: 7px;
+            font-weight: 700;
+            color: white;
+            text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 2;
+        }
+    </style>
 </head>
 
 <body>
-
-    <head>
-        <div class="logo">
-            <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('img/logo.jpeg'))) }}"
-                alt="Logo">
-        </div>
-    </head>
-    <main>
-        {{ $slot }}
-    </main>
-
+    <div class="header">
+        <div class="header-top">
+            <div class="logo">
+                <div class="logo-icon">
+                    <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('img/logo.png'))) }}"
+                        alt="Logo" style="width: 140px;">
+                </div>
+                {{-- <div class="logo-text">AUTO CARE PRO</div> --}}
+            </div>
+        {{ $head }}
+    </div>
+    {{ $slot }}
+    </div>
 </body>
 
 </html>
